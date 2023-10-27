@@ -71,15 +71,15 @@ class Course(models.Model):
         ("Four", 4),
     ]
     unit_count = models.CharField(max_length=10, choices=UNIT_COUNT_CHOICES, null=False)
-    offered_by = Professor()
+    offered_by = models.ForeignKey(Professor, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.course_name + "(" + self.course_code + ")"
 
 
 class Enrollment(models.Model):
-    student = Student()
-    course = Course()
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
     semester = models.CharField(max_length=50)
 
     def __str__(self):
@@ -88,7 +88,7 @@ class Enrollment(models.Model):
 
 class Department(models.Model):
     name = models.CharField(max_length=50, unique=True, null=False)
-    head_of_department = Professor()
+    head_of_department = models.ForeignKey(Professor, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name + " (head: " + self.head_of_department + ")"
