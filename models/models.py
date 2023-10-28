@@ -1,6 +1,7 @@
 from django.db import models
 from django_enum import EnumField
 from enum import Enum
+from multiselectfield import MultiSelectField
 
 
 # Create your models here.
@@ -104,7 +105,19 @@ class Classroom(models.Model):
 
 
 class Schedule(models.Model):
-    name = models.CharField(max_length=50)
+    DAY_CHOICES = [
+        ('MON', 'Monday'),
+        ('TUE', 'Tuesday'),
+        ('WED', 'Wednesday'),
+        ('THU', 'Thursday'),
+        ('FRI', 'Friday'),
+        ('SAT', 'Saturday'),
+        ('SUN', 'Sunday'),
+    ]
+    day = MultiSelectField(choices=DAY_CHOICES)
+    start_time = models.TimeField()
+    end_time = models.TimeField()
+    classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE)
 
     def __str__(self):
         return self.name + " (head: " + self.head_of_department + ")"
