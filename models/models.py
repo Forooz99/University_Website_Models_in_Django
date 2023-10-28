@@ -124,10 +124,12 @@ class Schedule(models.Model):
 
 
 class Assignment(models.Model):
-    name = models.CharField(max_length=50)
+    title = models.CharField(max_length=50)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    deadline = models.DateField(null=False)
 
     def __str__(self):
-        return self.name + " (head: " + self.head_of_department + ")"
+        return self.title + " (course: " + self.course + ")" + " (deadline: " + self.deadline + ")"
 
 
 class GradeReport(models.Model):
