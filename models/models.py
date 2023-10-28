@@ -98,10 +98,12 @@ class Department(models.Model):
 # Additional Models
 # TODO modify these classes
 class Classroom(models.Model):
-    name = models.CharField(max_length=50)
+    class_number = models.IntegerField(null=False)
+    department = models.ForeignKey(Department, on_delete=models.CASCADE)
+    capacity = models.IntegerField(null=False)
 
     def __str__(self):
-        return self.name + " (head: " + self.head_of_department + ")"
+        return self.class_number + " (department: " + self.department + ")" + "(capacity: " + self.capacity + ")"
 
 
 class Schedule(models.Model):
