@@ -1,38 +1,18 @@
 from django.db import models
 from django_enum import EnumField
+from django.core.validators import RegexValidator
 from enum import Enum
 from multiselectfield import MultiSelectField
 
 
-# Create your models here.
-
-class Major(Enum):
-    COMPUTER_ENGINEERING = 'CE'
-    COMPUTER_SCIENCE = 'CS'
-    CIVIL_ENGINEERING = 'CVE'
-    ELECTRICAL_ENGINEERING = 'EE'
-    MECHANICAL_ENGINEERING = 'ME'
-    CHEMICAL_ENGINEERING = 'CME'
-    AEROSPACE_ENGINEERING = 'AE'
-    INDUSTRIAL_ENGINEERING = 'IE'
-    PHYSICS = 'PHY'
-    MATHEMATICS = 'MATH'
-    CHEMISTRY = 'CHEM'
-
-
-class UnitCount(Enum):
-    ZERO = '0'
-    ONE = '1'
-    TWO = '2'
-    THREE = '3'
-    FOUR = '4'
+# TODO check field constraints and regex
 
 
 class Student(models.Model):
     first_name = models.CharField(max_length=50, null=False)
     last_name = models.CharField(max_length=50, null=False)
-    student_number = models.CharField(max_length=8, unique=True, null=False)
-    enrollment_year = models.CharField(max_length=4)
+    student_number = models.CharField(max_length=8, unique=True, null=False, validators=[RegexValidator(regex='^[0-9]{8}$', message='student-number must have 8 digits.')])
+    enrollment_year = models.DateField()
     MAJOR_CHOICES = [
         ('CE', 'Computer Engineering'),
         ('CS', 'Computer Science'),
@@ -54,7 +34,7 @@ class Student(models.Model):
 class Professor(models.Model):
     first_name = models.CharField(max_length=50, null=False)
     last_name = models.CharField(max_length=50, null=False)
-    staff_number = models.CharField(max_length=10, unique=True, null=False)
+    staff_number = models.CharField(max_length=8, unique=True, null=False, validators=[RegexValidator(regex='^[0-9]{8}$', message='staff-number must have 8 digits.')])
     hiring_date = models.DateField()
 
     def __str__(self):
@@ -63,7 +43,7 @@ class Professor(models.Model):
 
 class Course(models.Model):
     course_name = models.CharField(max_length=50, null=False)
-    course_code = models.IntegerField(unique=True, null=False)
+    course_code = models.IntegerField(unique=True, null=False, validators=[RegexValidator(regex='^[0-9]{5}$', message='course-code must have 5 digits.')])
     UNIT_COUNT_CHOICES = [
         ("Zero", 0),
         ("One", 1),
@@ -96,14 +76,15 @@ class Department(models.Model):
 
 
 # Additional Models
-# TODO modify these classes
 class Classroom(models.Model):
     class_number = models.IntegerField(null=False)
     department = models.ForeignKey(Department, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
     capacity = models.IntegerField(null=False)
 
     def __str__(self):
-        return self.class_number + " (department: " + self.department + ")" + "(capacity: " + self.capacity + ")"
+        return (self.class_number + " (course: " + self.course + "_" + self.department + ") " +
+                "(capacity: " + self.capacity + ")")
 
 
 class Schedule(models.Model):
@@ -116,13 +97,15 @@ class Schedule(models.Model):
         ('SAT', 'Saturday'),
         ('SUN', 'Sunday'),
     ]
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE)
     day = MultiSelectField(choices=DAY_CHOICES)
     start_time = models.TimeField()
     end_time = models.TimeField()
-    classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE)
 
     def __str__(self):
-        return self.name + " (head: " + self.head_of_department + ")"
+        return (self.student.student_number + ": " + self.classroom.course.course_name + "(" +
+                self.start_time + "-" + self.end_time + "-" + self.day + ")")
 
 
 class Assignment(models.Model):
@@ -135,7 +118,9 @@ class Assignment(models.Model):
 
 
 class GradeReport(models.Model):
-    name = models.CharField(max_length=50)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE)
+    grade = models.IntegerField()
 
     def __str__(self):
-        return self.name + " (head: " + self.head_of_department + ")"
+        return self.student.student_number + " (course: " + self.course.course_name + ") : " + self.grade
