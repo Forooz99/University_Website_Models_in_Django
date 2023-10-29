@@ -99,7 +99,7 @@ class Schedule(models.Model):
     ]
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE)
-    day = MultiSelectField(choices=DAY_CHOICES)
+    day = MultiSelectField(choices=DAY_CHOICES, max_length = 7)
     start_time = models.TimeField()
     end_time = models.TimeField()
 
